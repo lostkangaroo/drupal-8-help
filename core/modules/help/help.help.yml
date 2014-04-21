@@ -1,0 +1,2 @@
+help.main:
+  callback: 'help_help_main'

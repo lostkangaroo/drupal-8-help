@@ -1,0 +1,2 @@
+help.main:
+  callback: 'action_help_main'

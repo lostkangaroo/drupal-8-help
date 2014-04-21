@@ -8,8 +8,11 @@
 namespace Drupal\help\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Extension\ExtensionDiscovery;
+use Drupal\Component\Discovery\YamlDiscovery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Drupal\Component\Utility\String;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Controller routines for help routes.
@@ -78,9 +81,46 @@ class HelpController extends ControllerBase {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
    */
-  public function helpPage($name) {
+  public function helpPage($name, Request $request) {
     $build = array();
-    if ($this->moduleHandler()->implementsHook($name, 'help')) {
+
+    if($this->moduleHandler()->moduleExists($name)) {
+      //Module is loaded
+      $build['top']['#markup'] = 'found active module';
+      $module = $this->moduleHandler()->getModule($name);
+    }
+    else {
+      //Module is not loaded and needs to be located
+      $listing = new ExtensionDiscovery();
+      $modules = $listing->scan('module');
+
+      if(array_key_exists($name, $modules)){
+        $build['top']['#markup'] = 'nonactive module found';
+        $module = $modules[$name];
+      }
+      else{
+        //module does not exist or located in a folder not on the scan list
+        throw new NotFoundHttpException();
+      }
+    }
+
+    $path = $module->getPath();
+    $helpYAML = new YamlDiscovery('help', array($name => $path));
+    $definitions = $helpYAML->findAll();
+
+    if(isset($definitions[$name]['help.main'])) {
+      include_once(DRUPAL_ROOT . '/' . $path . '/' . $name . '.help.php');
+      $build['top']['#markup'] = $definitions[$name]['help.main']['callback']();
+    }
+    else {
+      $build['top']['#markup'] = $this->t('No help is available for module %module.', array('%module' => $name));
+    }
+
+    return $build;
+
+
+
+    /*if ($this->moduleHandler()->implementsHook($name, 'help')) {
       $info = system_get_info('module');
       $build['#title'] = String::checkPlain($info[$name]['name']);
 
@@ -115,7 +155,6 @@ class HelpController extends ControllerBase {
     }
     else {
       throw new NotFoundHttpException();
-    }
+    }*/
   }
-
 }

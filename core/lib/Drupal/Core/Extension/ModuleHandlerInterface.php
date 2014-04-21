@@ -58,6 +58,17 @@ interface ModuleHandlerInterface {
   public function getModuleList();
 
   /**
+   * Returns a module from currently active modules list
+   *
+   * @param string $name
+   *   The name of the module to return
+   *
+   * @return \Drupal\Core\Extension\Extension
+   *   A module extension object
+   */
+  public function getModule($name);
+
+  /**
    * Sets an explicit list of currently active modules.
    *
    * @param \Drupal\Core\Extension\Extension[] $module_list

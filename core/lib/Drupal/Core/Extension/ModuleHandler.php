@@ -150,6 +150,13 @@ class ModuleHandler implements ModuleHandlerInterface {
   /**
    * {@inheritdoc}
    */
+  public function getModule($name) {
+    return $this->moduleList[$name];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function setModuleList(array $module_list = array()) {
     $this->moduleList = $module_list;
     // Reset the implementations, so a new call triggers a reloading of the
