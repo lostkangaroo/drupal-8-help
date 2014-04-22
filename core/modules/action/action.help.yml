@@ -1,2 +1,2 @@
-help.main:
-  callback: 'action_help_main'
+help.page:
+  callback: 'action_help_page'

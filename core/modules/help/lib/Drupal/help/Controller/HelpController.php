@@ -81,38 +81,39 @@ class HelpController extends ControllerBase {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
    */
-  public function helpPage($name, Request $request) {
+  public function helpPage($name) {
     $build = array();
 
     if($this->moduleHandler()->moduleExists($name)) {
       //Module is loaded
-      $build['top']['#markup'] = 'found active module';
       $module = $this->moduleHandler()->getModule($name);
     }
     else {
-      //Module is not loaded and needs to be located
+      //Module is not active and needs to be located
       $listing = new ExtensionDiscovery();
       $modules = $listing->scan('module');
 
       if(array_key_exists($name, $modules)){
-        $build['top']['#markup'] = 'nonactive module found';
         $module = $modules[$name];
       }
       else{
-        //module does not exist or located in a folder not on the scan list
+        //module does not exist or not located in a folder in the scan list
         throw new NotFoundHttpException();
       }
     }
 
+    //discover help.yml definitions
     $path = $module->getPath();
     $helpYAML = new YamlDiscovery('help', array($name => $path));
     $definitions = $helpYAML->findAll();
 
-    if(isset($definitions[$name]['help.main'])) {
+    if(isset($definitions[$name]['help.page'])) {
       include_once(DRUPAL_ROOT . '/' . $path . '/' . $name . '.help.php');
-      $build['top']['#markup'] = $definitions[$name]['help.main']['callback']();
+      //call function set in the module.help.yml file
+      $build['top']['#markup'] = $definitions[$name]['help.page']['callback']();
     }
     else {
+      //module is found but does not contain a main help page callback
       $build['top']['#markup'] = $this->t('No help is available for module %module.', array('%module' => $name));
     }
 

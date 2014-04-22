@@ -1,2 +1,5 @@
+help.page:
+  callback: 'help_help_page'
+
 help.main:
   callback: 'help_help_main'

@@ -47,3 +47,29 @@ function help_preprocess_block(&$variables) {
     $variables['attributes']['role'] = 'complementary';
   }
 }
+
+/**
+ * Implements hook_form_FORM_ID_alter()
+ */
+function help_form_system_modules_alter(&$form, &$form_state, $form_id) {
+  foreach($form['modules'] as $package_key => $package) {
+    if(strpos($package_key, '#') === 0) {
+      continue;
+    }
+
+    foreach ($package as $module_key => $module) {
+      if(strpos($module_key, '#') === 0) {
+        continue;
+      }
+
+      $module['links']['help'] = array(
+        '#type' => 'link',
+        '#title' => t('Help'),
+        '#href' => 'admin/help/' . $module_key,
+        '#options' => array('attributes' => array('class' =>  array('module-link', 'module-link-help'), 'title' => t('Help'))),
+      );
+
+      $form['modules'][$package_key][$module_key] = $module;
+    }
+  }
+}
